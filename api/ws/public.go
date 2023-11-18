@@ -441,14 +441,14 @@ func (c *Public) Process(data []byte, e *events.Basic) bool {
 			return true
 		case "mark-price":
 			//e := public.MarkPrice{}
-			e := MarketPricePool.Get().(public.MarkPrice)
-			err := json.Unmarshal(data, &e)
+			e := MarketPricePool.Get().(*public.MarkPrice)
+			err := json.Unmarshal(data, e)
 			if err != nil {
 				return false
 			}
 			go func() {
 				if c.mpCh != nil {
-					c.mpCh <- &e
+					c.mpCh <- e
 				}
 				c.StructuredEventChan <- e
 			}()
@@ -578,5 +578,5 @@ func (c *Public) Process(data []byte, e *events.Basic) bool {
 var MarketPricePool = sync.Pool{
 	// New optionally specifies a function to generate
 	// a value when Get would otherwise return nil.
-	New: func() interface{} { return public.MarkPrice{} },
+	New: func() interface{} { return new(public.MarkPrice) },
 }
