@@ -578,5 +578,5 @@ func (c *Public) Process(data []byte, e *events.Basic) bool {
 var marketPricePool = sync.Pool{
 	// New optionally specifies a function to generate
 	// a value when Get would otherwise return nil.
-	New: func() interface{} { return new(public.MarkPrice) },
+	New: func() interface{} { return public.MarkPrice{} },
 }
