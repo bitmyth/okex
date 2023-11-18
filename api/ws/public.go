@@ -620,8 +620,12 @@ func decodeMarketPrice(data []byte, price *public.MarkPrice) error {
 				return err
 			}
 			fmt.Printf("Item: %+v\n", p)
-			markP := p.(float64)
-			price.Prices = append(price.Prices, &publicdata.MarkPrice{MarkPx: okex.JSONFloat64(markP)})
+			if markP, ok := p.(float64); ok {
+				price.Prices = append(price.Prices, &publicdata.MarkPrice{MarkPx: okex.JSONFloat64(markP)})
+			} else {
+				println("not float64")
+			}
+
 		}
 
 		//if delim, ok := t.(json.Delim); !ok || delim != '[' {
