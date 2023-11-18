@@ -1,12 +1,15 @@
 package ws
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/bitmyth/okex"
 	"github.com/bitmyth/okex/events"
 	"github.com/bitmyth/okex/events/public"
 	requests "github.com/bitmyth/okex/requests/ws/public"
+	"log"
 	"strings"
 	"sync"
 )
@@ -442,7 +445,8 @@ func (c *Public) Process(data []byte, e *events.Basic) bool {
 		case "mark-price":
 			//e := public.MarkPrice{}
 			e := MarketPricePool.Get().(*public.MarkPrice)
-			err := json.Unmarshal(data, e)
+			err := decodeMarketPrice(data, e)
+			//err := json.Unmarshal(data, e)
 			if err != nil {
 				return false
 			}
@@ -579,4 +583,52 @@ var MarketPricePool = sync.Pool{
 	// New optionally specifies a function to generate
 	// a value when Get would otherwise return nil.
 	New: func() interface{} { return new(public.MarkPrice) },
+}
+
+func decodeMarketPrice(data []byte, price *public.MarkPrice) error {
+	dec := json.NewDecoder(bytes.NewReader(data))
+	// We expect an object
+	t, err := dec.Token()
+	if err != nil {
+		return err
+	}
+	if delim, ok := t.(json.Delim); !ok || delim != '{' {
+		return errors.New("expected object")
+	}
+
+	// Read props
+	for dec.More() {
+		t, err = dec.Token()
+		if err != nil {
+			return err
+		}
+
+		// It's the "items". We expect it to be an array
+		t, err = dec.Token()
+		if err != nil {
+			return err
+		}
+		if delim, ok := t.(json.Delim); !ok || delim != '[' {
+			log.Fatal("Expected array")
+		}
+		// Read items (large objects)
+		for dec.More() {
+			// Read next item (large object)
+			err = dec.Decode(&price)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("Item: %+v\n", price)
+		}
+		// Array closing delim
+		t, err = dec.Token()
+		if err != nil {
+			return err
+		}
+		if delim, ok := t.(json.Delim); !ok || delim != ']' {
+			log.Fatal("Expected array closing")
+		}
+	}
+
+	return nil
 }
