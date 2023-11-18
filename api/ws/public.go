@@ -8,6 +8,7 @@ import (
 	"github.com/amir-the-h/okex/events/public"
 	requests "github.com/amir-the-h/okex/requests/ws/public"
 	"strings"
+	"sync"
 )
 
 // Public
@@ -439,7 +440,8 @@ func (c *Public) Process(data []byte, e *events.Basic) bool {
 			}()
 			return true
 		case "mark-price":
-			e := public.MarkPrice{}
+			//e := public.MarkPrice{}
+			e := marketPricePool.Get().(public.MarkPrice)
 			err := json.Unmarshal(data, &e)
 			if err != nil {
 				return false
@@ -570,4 +572,11 @@ func (c *Public) Process(data []byte, e *events.Basic) bool {
 		}
 	}
 	return false
+}
+
+// Initializing pool
+var marketPricePool = sync.Pool{
+	// New optionally specifies a function to generate
+	// a value when Get would otherwise return nil.
+	New: func() interface{} { return new(public.MarkPrice) },
 }
