@@ -8,8 +8,8 @@ import (
 	"github.com/bitmyth/okex"
 	"github.com/bitmyth/okex/events"
 	"github.com/bitmyth/okex/events/public"
+	"github.com/bitmyth/okex/models/publicdata"
 	requests "github.com/bitmyth/okex/requests/ws/public"
-	"log"
 	"strings"
 	"sync"
 )
@@ -588,47 +588,63 @@ var MarketPricePool = sync.Pool{
 func decodeMarketPrice(data []byte, price *public.MarkPrice) error {
 	dec := json.NewDecoder(bytes.NewReader(data))
 	// We expect an object
-	t, err := dec.Token()
-	if err != nil {
-		return err
-	}
-	if delim, ok := t.(json.Delim); !ok || delim != '{' {
-		return errors.New("expected object")
-	}
-
-	// Read props
-	for dec.More() {
+	var t json.Token
+	var err error
+	for {
 		t, err = dec.Token()
 		if err != nil {
 			return err
 		}
+		if t == "data" {
+			break
+		}
+	}
 
-		// It's the "items". We expect it to be an array
-		t, err = dec.Token()
-		if err != nil {
-			return err
+	t, _ = dec.Token()
+	if delim, ok := t.(json.Delim); !ok || delim != '[' {
+		return errors.New("expected array")
+	}
+
+	for {
+		token, _ := dec.Token()
+		if token == nil {
+			break
 		}
-		if delim, ok := t.(json.Delim); !ok || delim != '[' {
-			log.Fatal("Expected array")
+		if delim, ok := t.(json.Delim); ok && delim == ']' {
+			break
 		}
-		// Read items (large objects)
-		for dec.More() {
-			// Read next item (large object)
-			err = dec.Decode(&price)
+		if token == "markPx" {
+			var p interface{}
+			err = dec.Decode(&p)
 			if err != nil {
 				return err
 			}
-			fmt.Printf("Item: %+v\n", price)
+			fmt.Printf("Item: %+v\n", p)
+			markP := p.(float64)
+			price.Prices = append(price.Prices, &publicdata.MarkPrice{MarkPx: okex.JSONFloat64(markP)})
 		}
+
+		//if delim, ok := t.(json.Delim); !ok || delim != '[' {
+		//	log.Fatal("Expected array")
+		//}
+		// Read items (large objects)
+		//for dec.More() {
+		//	// Read next item (large object)
+		//	err = dec.Decode(&price)
+		//	if err != nil {
+		//		return err
+		//	}
+		//	fmt.Printf("Item: %+v\n", price)
+		//}
 		// Array closing delim
-		t, err = dec.Token()
-		if err != nil {
-			return err
-		}
-		if delim, ok := t.(json.Delim); !ok || delim != ']' {
-			log.Fatal("Expected array closing")
-		}
 	}
+	//t, err = dec.Token()
+	//if err != nil {
+	//	return err
+	//}
+	//if delim, ok := t.(json.Delim); !ok || delim != ']' {
+	//	log.Fatal("Expected array closing")
+	//}
 
 	return nil
 }
