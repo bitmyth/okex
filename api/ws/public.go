@@ -446,9 +446,10 @@ func (c *Public) Process(data []byte, e *events.Basic) bool {
 			return true
 		case "mark-price":
 			//e := public.MarkPrice{}
-			e := MarketPricePool.Get().(*public.MarkPrice)
-			err := decodeMarketPrice(data, e)
 			//err := json.Unmarshal(data, e)
+			e := MarketPricePool.Get().(*public.MarkPrice)
+			e.Prices = e.Prices[0:0]
+			err := decodeMarketPrice(data, e)
 			if err != nil {
 				return false
 			}
@@ -639,27 +640,7 @@ func decodeMarketPrice(data []byte, price *public.MarkPrice) error {
 
 		}
 
-		//if delim, ok := t.(json.Delim); !ok || delim != '[' {
-		//	log.Fatal("Expected array")
-		//}
-		// Read items (large objects)
-		//for dec.More() {
-		//	// Read next item (large object)
-		//	err = dec.Decode(&price)
-		//	if err != nil {
-		//		return err
-		//	}
-		//	fmt.Printf("Item: %+v\n", price)
-		//}
-		// Array closing delim
 	}
-	//t, err = dec.Token()
-	//if err != nil {
-	//	return err
-	//}
-	//if delim, ok := t.(json.Delim); !ok || delim != ']' {
-	//	log.Fatal("Expected array closing")
-	//}
 
 	return nil
 }
