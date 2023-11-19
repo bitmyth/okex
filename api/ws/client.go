@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/bitmyth/okex"
+	"github.com/bitmyth/okex/decoder"
 	"github.com/bitmyth/okex/events"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -315,12 +316,17 @@ func (c *ClientWs) receiver(p bool) error {
 			c.lastTransmit[p] = &now
 			c.mu[p].Unlock()
 			if mt == websocket.TextMessage && string(data) != "pong" {
-				e := &events.Basic{}
-				if err := json.Unmarshal(data, &e); err != nil {
+				//e := &events.Basic{}
+				//if err := json.Unmarshal(data, &e); err != nil {
+				//	return err
+				//}
+				e, err := decoder.DecodeBasicEvent(data)
+				if err != nil {
 					return err
 				}
+
 				go func() {
-					c.process(data, e)
+					c.process(data, &e)
 				}()
 			}
 		}

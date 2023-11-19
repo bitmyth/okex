@@ -371,7 +371,8 @@ func (c *Public) UIndexTickers(req requests.IndexTickers, rCh ...bool) error {
 }
 
 func (c *Public) Process(data []byte, e *events.Basic) bool {
-	if e.Event == "" && e.Arg != nil && e.Data != nil && len(e.Data) > 0 {
+	//if e.Event == "" && e.Arg != nil && e.Data != nil && len(e.Data) > 0 {
+	if e.Event == "" {
 		ch, ok := e.Arg.Get("channel")
 		if !ok {
 			return false
@@ -600,7 +601,14 @@ func decodeMarketPrice(data []byte, price *public.MarkPrice) error {
 		}
 	}
 
-	t, _ = dec.Token()
+	t, err = dec.Token()
+	if err != nil {
+		return err
+	}
+
+	if t == nil {
+		return nil
+	}
 	if delim, ok := t.(json.Delim); !ok || delim != '[' {
 		return errors.New("expected array")
 	}
