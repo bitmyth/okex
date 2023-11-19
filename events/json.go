@@ -8,6 +8,9 @@ import (
 )
 
 func DecodeBasicEvent(data []byte) (e Basic, err error) {
+	e.Arg = &Argument{
+		arg: map[string]interface{}{},
+	}
 	dec := json.NewDecoder(bytes.NewReader(data))
 	var t json.Token
 
