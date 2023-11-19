@@ -10,6 +10,7 @@ import (
 	"github.com/bitmyth/okex/events/public"
 	"github.com/bitmyth/okex/models/publicdata"
 	requests "github.com/bitmyth/okex/requests/ws/public"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -622,16 +623,18 @@ func decodeMarketPrice(data []byte, price *public.MarkPrice) error {
 			break
 		}
 		if token == "markPx" {
-			var p interface{}
+			var p string
 			err = dec.Decode(&p)
 			if err != nil {
 				return err
 			}
 			fmt.Printf("Item: %+v\n", p)
-			if markP, ok := p.(float64); ok {
-				price.Prices = append(price.Prices, &publicdata.MarkPrice{MarkPx: okex.JSONFloat64(markP)})
+
+			f, err := strconv.ParseFloat(p, 64)
+			if err != nil {
+				println("not float64", p)
 			} else {
-				println("not float64")
+				price.Prices = append(price.Prices, &publicdata.MarkPrice{MarkPx: okex.JSONFloat64(f)})
 			}
 
 		}
