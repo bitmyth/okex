@@ -72,31 +72,29 @@ func DecodeBasicEvent(data []byte) (e Basic, err error) {
 					break
 				}
 
-				if t == "arg" {
-					for dec.More() {
-						t, err = dec.Token()
+				for dec.More() {
+					t, err = dec.Token()
+					if err != nil {
+						return
+					}
+
+					if t == "channel" {
+
+						var p string
+						err = dec.Decode(&p)
 						if err != nil {
 							return
 						}
 
-						if t == "channel" {
-
-							var p string
-							err = dec.Decode(&p)
-							if err != nil {
-								return
-							}
-
-							e.Arg = &Argument{
-								arg: map[string]interface{}{
-									"channel": p,
-								},
-							}
+						e.Arg = &Argument{
+							arg: map[string]interface{}{
+								"channel": p,
+							},
 						}
-
 					}
 
 				}
+
 			}
 
 			var p string
