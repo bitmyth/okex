@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/bitmyth/okex"
-	"github.com/bitmyth/okex/decoder"
 	"github.com/bitmyth/okex/events"
 	"github.com/gorilla/websocket"
 	"net/http"
@@ -320,7 +319,7 @@ func (c *ClientWs) receiver(p bool) error {
 				//if err := json.Unmarshal(data, &e); err != nil {
 				//	return err
 				//}
-				e, err := decoder.DecodeBasicEvent(data)
+				e, err := events.DecodeBasicEvent(data)
 				if err != nil {
 					return err
 				}
