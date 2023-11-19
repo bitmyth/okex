@@ -623,13 +623,28 @@ func decodeMarketPrice(data []byte, price *public.MarkPrice) error {
 		if delim, ok := t.(json.Delim); ok && delim == ']' {
 			break
 		}
+
+		var ts string
+		if token == "ts" {
+			err = dec.Decode(&ts)
+			if err != nil {
+				return err
+			}
+
+			last := len(price.Prices) - 1
+			tm := &okex.JSONTime{}
+			tm.UnmarshalJSON([]byte(ts))
+			price.Prices[last].TS = *tm
+
+		}
+
 		if token == "markPx" {
 			var p string
 			err = dec.Decode(&p)
 			if err != nil {
 				return err
 			}
-			fmt.Printf("Item: %+v\n", p)
+			//fmt.Printf("Item: %+v\n", p)
 
 			f, err := strconv.ParseFloat(p, 64)
 			if err != nil {
