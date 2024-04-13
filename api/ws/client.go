@@ -279,9 +279,11 @@ func (c *ClientWs) sender(p bool) error {
 				return err
 			}
 		case <-ticker.C:
+			c.mu[p].Lock() // prevent concurrent map read and write
 			if c.conn[p] != nil && (c.lastTransmit[p] == nil || (c.lastTransmit[p] != nil && time.Since(*c.lastTransmit[p]) > PingPeriod)) {
 				go func() {
 					c.sendChan[p] <- []byte("ping")
+					c.mu[p].Unlock()
 				}()
 			}
 		case <-c.ctx.Done():
