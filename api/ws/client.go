@@ -7,12 +7,14 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/bitmyth/okex"
-	"github.com/bitmyth/okex/events"
-	"github.com/gorilla/websocket"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
+
+	"github.com/bitmyth/okex"
+	"github.com/bitmyth/okex/events"
 )
 
 // ClientWs is the websocket api client
@@ -279,11 +281,13 @@ func (c *ClientWs) sender(p bool) error {
 				return err
 			}
 		case <-ticker.C:
+			c.mu[p].RLock()
 			if c.conn[p] != nil && (c.lastTransmit[p] == nil || (c.lastTransmit[p] != nil && time.Since(*c.lastTransmit[p]) > PingPeriod)) {
 				go func() {
 					c.sendChan[p] <- []byte("ping")
 				}()
 			}
+			c.mu[p].RUnlock()
 		case <-c.ctx.Done():
 			return c.handleCancel("sender")
 		}
