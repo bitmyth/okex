@@ -3,8 +3,10 @@ package events
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/bitmyth/okex"
 	"io"
+	"strconv"
+
+	"github.com/bitmyth/okex"
 )
 
 func DecodeBasicEvent(data []byte) (e Basic, err error) {
@@ -45,12 +47,12 @@ func DecodeBasicEvent(data []byte) (e Basic, err error) {
 		}
 
 		if t == "code" {
-			var p int
+			var p string
 			err = dec.Decode(&p)
 			if err != nil {
 				return
 			}
-			e.Code = p
+			e.Code, _ = strconv.Atoi(p)
 		}
 
 		if t == "msg" {
