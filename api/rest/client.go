@@ -7,12 +7,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/bitmyth/okex"
-	requests "github.com/bitmyth/okex/requests/rest/public"
-	responses "github.com/bitmyth/okex/responses/public_data"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/bitmyth/okex"
+	requests "github.com/bitmyth/okex/requests/rest/public"
+	responses "github.com/bitmyth/okex/responses/public_data"
 )
 
 // ClientRest is the rest api client
@@ -50,6 +51,63 @@ func NewClient(apiKey, secretKey, passphrase string, baseURL okex.BaseURL, desti
 	c.PublicData = NewPublicData(c)
 	c.TradeData = NewTradeData(c)
 	return c
+}
+
+func (c *ClientRest) Do2(method, path string, private bool, params ...map[string]any) (*http.Response, error) {
+	u := fmt.Sprintf("%s%s", c.baseURL, path)
+	var (
+		r    *http.Request
+		err  error
+		j    []byte
+		body string
+	)
+	if method == http.MethodGet {
+		r, err = http.NewRequest(http.MethodGet, u, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(params) > 0 {
+			q := r.URL.Query()
+			for k, v := range params[0] {
+				if vs, ok := v.(string); ok {
+					q.Add(k, strings.ReplaceAll(vs, "\"", ""))
+				}
+			}
+			r.URL.RawQuery = q.Encode()
+			if len(params[0]) > 0 {
+				path += "?" + r.URL.RawQuery
+			}
+		}
+	} else {
+		j, err = json.Marshal(params[0])
+		if err != nil {
+			return nil, err
+		}
+		body = string(j)
+		if body == "{}" {
+			body = ""
+		}
+		r, err = http.NewRequest(method, u, bytes.NewBuffer(j))
+		if err != nil {
+			return nil, err
+		}
+		r.Header.Add("Content-Type", "application/json")
+	}
+	if err != nil {
+		return nil, err
+	}
+	if private {
+		timestamp, sign := c.sign(method, path, body)
+		r.Header.Add("OK-ACCESS-KEY", c.apiKey)
+		r.Header.Add("OK-ACCESS-PASSPHRASE", c.passphrase)
+		r.Header.Add("OK-ACCESS-SIGN", sign)
+		r.Header.Add("OK-ACCESS-TIMESTAMP", timestamp)
+	}
+	if c.destination == okex.DemoServer {
+		r.Header.Add("x-simulated-trading", "1")
+	}
+	return c.client.Do(r)
 }
 
 // Do the http request to the server
