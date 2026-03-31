@@ -548,18 +548,18 @@ func (c *Public) Process(data []byte, e *events.Basic) bool {
 			}
 			// candlestick channels
 			if strings.Contains(chName, "candle") {
-				e := public.Candlesticks{}
-				err := json.Unmarshal(data, &e)
-				if err != nil {
-					return false
-				}
-				go func() {
-					if c.cCh != nil {
-						c.cCh <- &e
-					}
-					c.StructuredEventChan <- e
-				}()
-				return true
+				// e := public.Candlesticks{}
+				// err := json.Unmarshal(data, &e)
+				// if err != nil {
+				// 	return false
+				// }
+				// go func() {
+				// 	if c.cCh != nil {
+				// 		c.cCh <- &e
+				// 	}
+				// 	c.StructuredEventChan <- e
+				// }()
+				// return true
 			}
 			// order book channels
 			if strings.Contains(chName, "books") {

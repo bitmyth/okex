@@ -37,6 +37,7 @@ type ClientWs struct {
 	secretKey           []byte
 	passphrase          string
 	lastTransmit        map[string]*time.Time
+	lastTransmitMu      sync.Mutex
 	mu                  map[string]*sync.RWMutex
 	AuthRequested       *time.Time
 	Authorized          bool
@@ -261,24 +262,26 @@ func (c *ClientWs) sender(p string) error {
 	for {
 		select {
 		case data := <-c.sendChan[p]:
-			c.mu[p].RLock()
+			// c.mu[p].RLock()
 			err := c.conn[p].SetWriteDeadline(time.Now().Add(writeWait))
 			if err != nil {
-				c.mu[p].RUnlock()
+				// c.mu[p].RUnlock()
 				return err
 			}
 			w, err := c.conn[p].NextWriter(websocket.TextMessage)
 			if err != nil {
-				c.mu[p].RUnlock()
+				// c.mu[p].RUnlock()
 				return err
 			}
 			if _, err = w.Write(data); err != nil {
-				c.mu[p].RUnlock()
+				// c.mu[p].RUnlock()
 				return err
 			}
 			now := time.Now()
+			c.lastTransmitMu.Lock()
 			c.lastTransmit[p] = &now
-			c.mu[p].RUnlock()
+			c.lastTransmitMu.Unlock()
+			// c.mu[p].RUnlock()
 			if err := w.Close(); err != nil {
 				return err
 			}
@@ -317,9 +320,11 @@ func (c *ClientWs) receiver(p string) error {
 			}
 			c.mu[p].RUnlock()
 			now := time.Now()
-			c.mu[p].Lock()
+			// c.mu[p].Lock()
+			c.lastTransmitMu.Lock()
 			c.lastTransmit[p] = &now
-			c.mu[p].Unlock()
+			c.lastTransmitMu.Unlock()
+			// c.mu[p].Unlock()
 			if mt == websocket.TextMessage && string(data) != "pong" {
 				//e := &events.Basic{}
 				//if err := json.Unmarshal(data, &e); err != nil {
@@ -404,6 +409,9 @@ func (c *ClientWs) process(data []byte, e *events.Basic) bool {
 		return true
 	}
 	if c.Public.Process(data, e) {
+		return true
+	}
+	if c.Business.Process(data, e) {
 		return true
 	}
 	if e.ID != "" {
