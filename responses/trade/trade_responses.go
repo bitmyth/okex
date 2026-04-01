@@ -18,6 +18,15 @@ type (
 		responses.Basic
 		AmendOrders []*trade.AmendOrder `json:"data"`
 	}
+	AmendAlgoOrderResponse struct {
+		responses.Basic
+		Order []AmendAlgoOrder `json:"data"`
+	}
+	AmendAlgoOrder struct {
+		AlgoID string `json:"algoId"`
+		SCode  string `json:"sCode"`
+		SMsg   string `json:"sMsg"`
+	}
 	ClosePosition struct {
 		responses.Basic
 		ClosePositions []*trade.ClosePosition `json:"data"`

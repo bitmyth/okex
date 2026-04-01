@@ -47,6 +47,12 @@ type (
 		OrdID   string `json:"ordId,omitempty"`
 		ClOrdID string `json:"clOrdId,omitempty"`
 	}
+	AmendAlgoOrder struct {
+		InstID         string  `json:"instId"`
+		AlgoID         string  `json:"algoId"`
+		NewSlTriggerPx float64 `json:"newSlTriggerPx,omitempty,string"`
+		NewTpTriggerPx float64 `json:"newTpTriggerPx,omitempty,string"`
+	}
 	OrderList struct {
 		Uly      string              `json:"uly,omitempty"`
 		InstID   string              `json:"instId,omitempty"`
@@ -104,6 +110,9 @@ type (
 	CancelAlgoOrder struct {
 		InstID string `json:"instId"`
 		AlgoID string `json:"AlgoId"`
+	}
+	AlgoOrder struct {
+		AlgoID string `json:"algoId"`
 	}
 	AlgoOrderList struct {
 		InstType okex.InstrumentType `json:"instType,omitempty"`

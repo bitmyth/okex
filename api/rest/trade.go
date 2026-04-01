@@ -300,3 +300,16 @@ func (c *Trade) GetAlgoOrderList(req requests.AlgoOrderList, arch bool) (respons
 
 	return
 }
+
+func (c *Trade) AmendAlgoOrder(req requests.AmendAlgoOrder) (response responses.AmendAlgoOrderResponse, err error){
+	p := "/api/v5/trade/amend-algos"
+	m := okex.S2M(req)
+	res, err := c.client.Do(http.MethodPost, p, true, m)
+	if err != nil {
+		return
+	}
+	defer res.Body.Close()
+	d := json.NewDecoder(res.Body)
+	err = d.Decode(&response)
+	return
+}
