@@ -53,6 +53,33 @@ type (
 		NewSlTriggerPx float64 `json:"newSlTriggerPx,omitempty,string"`
 		NewTpTriggerPx float64 `json:"newTpTriggerPx,omitempty,string"`
 	}
+	AmendAttachedAlgoOrder struct {
+		InstID         string  `json:"instId"`
+		OrdID          string            `json:"ordId,omitempty"`
+		ClOrdID        string            `json:"clOrdId,omitempty"`
+		AttachAlgoOrds []AttachAlgoOrder `json:"attachAlgoOrds"`
+	}
+	AttachAlgoOrder struct {
+		AttachAlgoId      string `json:"attachAlgoId,omitempty"`      // The order ID of attached TP/SL order (用于 amend)
+		AttachAlgoClOrdId string `json:"attachAlgoClOrdId,omitempty"` // Client-supplied Algo ID
+
+		// Take Profit (TP) 相关字段
+		NewTpOrdKind       string `json:"newTpOrdKind,omitempty"`       // condition / limit
+		NewTpTriggerPx     string `json:"newTpTriggerPx,omitempty"`     // Take-profit trigger price
+		NewTpTriggerRatio  string `json:"newTpTriggerRatio,omitempty"`  // Take profit trigger ratio (e.g. "0.3" = 30%)
+		NewTpTriggerPxType string `json:"newTpTriggerPxType,omitempty"` // last / index / mark
+		NewTpOrdPx         string `json:"newTpOrdPx,omitempty"`         // Take-profit order price
+
+		// Stop Loss (SL) 相关字段
+		NewSlTriggerPx     string `json:"newSlTriggerPx,omitempty"`     // Stop-loss trigger price
+		NewSlTriggerRatio  string `json:"newSlTriggerRatio,omitempty"`  // Stop-loss trigger ratio
+		NewSlTriggerPxType string `json:"newSlTriggerPxType,omitempty"` // last / index / mark
+		NewSlOrdPx         string `json:"newSlOrdPx,omitempty"`         // Stop-loss order price
+
+		// 其他字段
+		Sz                   string `json:"sz,omitempty"`                   // Size (仅适用于 split TP)
+		AmendPxOnTriggerType string `json:"amendPxOnTriggerType,omitempty"` // 是否启用成本价止损 (0/1)，仅适用于 split TP 的 SL
+	}
 	OrderList struct {
 		Uly      string              `json:"uly,omitempty"`
 		InstID   string              `json:"instId,omitempty"`

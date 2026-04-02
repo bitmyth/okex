@@ -313,3 +313,17 @@ func (c *Trade) AmendAlgoOrder(req requests.AmendAlgoOrder) (response responses.
 	err = d.Decode(&response)
 	return
 }
+
+func (c *Trade) AmendOrderWithAttachAlgos(req requests.AmendAttachedAlgoOrder) (response responses.AmendAlgoOrderResponse, err error) {
+	p := "/api/v5/trade/amend-order"
+	m := okex.S2M2(req)
+	println("len: ",len(req.AttachAlgoOrds),req.AttachAlgoOrds[0].NewSlTriggerPx)
+	res, err := c.client.Do2(http.MethodPost, p, true, m)
+	if err != nil {
+		return
+	}
+	defer res.Body.Close()
+	d := json.NewDecoder(res.Body)
+	err = d.Decode(&response)
+	return
+}

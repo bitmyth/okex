@@ -466,3 +466,11 @@ func S2M(i interface{}) map[string]string {
 
 	return m
 }
+
+func S2M2(i interface{}) map[string]any {
+	m := make(map[string]any)
+	j, _ := json.Marshal(i)
+	_ = json.Unmarshal(j, &m)
+
+	return m
+}
