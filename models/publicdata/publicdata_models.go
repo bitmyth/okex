@@ -42,6 +42,7 @@ type (
 		Oi       okex.JSONFloat64    `json:"oi"`
 		OiCcy    okex.JSONFloat64    `json:"oiCcy"`
 		InstType okex.InstrumentType `json:"instType"`
+		OiUsd    okex.JSONFloat64    `json:"oiUsd"`
 		TS       okex.JSONTime       `json:"ts"`
 	}
 	FundingRate struct {
